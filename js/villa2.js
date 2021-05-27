@@ -3,10 +3,6 @@
 var dinero=0;
 var dineros;
 
-//direcciones de cerdos
-var direccion1=1;
-var direccion2=1;
-
 //Variables de la interaccion
 var cd=0;
 var cd2=100;
@@ -49,11 +45,6 @@ var contadorCorazones=0;
 var corazones = null;
 var corazondemelon;
 
-
-//CERDOS
-var cerdo1;
-var cerdo2;
-
 //PUZLE
 var pieza=0;
 var antorcha1;
@@ -85,6 +76,9 @@ var cdf=0;
 var finalc=false;
 var fuego=0;
 
+var cerdo1;
+var cerdo2;
+
 var tronco;
 
 var pergamino;
@@ -105,10 +99,10 @@ var ataquebasico2=50;
 var ataquebasico3=50;
 var ataquebasico4=50;
 
-var ataquebasicoemboscada1;
-var ataquebasicoemboscada2;
-var ataquebasicoemboscada3;
-var ataquebasicoemboscada4;
+var ataquebasicoemboscada1=0;
+var ataquebasicoemboscada2=0;
+var ataquebasicoemboscada3=0;
+var ataquebasicoemboscada4=0;
 
 var vidaenemigoemboscada1=true;
 var vidaenemigoemboscada2=true;
@@ -116,6 +110,7 @@ var vidaenemigoemboscada3=true;
 var vidaenemigoemboscada4=true;
 var ataqueemboscada=false;
 var seguiremboscada=false;
+var emboscadaempieza=true;
 
 class villa2 extends Phaser.Scene
 {
@@ -125,10 +120,6 @@ class villa2 extends Phaser.Scene
 
 //Dinero
 var dinero=0;
-
-//direcciones de cerdos
-var direccion1=1;
-var direccion2=1;
 
 //Variables de la interaccion
 var cd=0;
@@ -217,8 +208,6 @@ preload()
 
     this.load.atlas('ataquesimple','assets/ataquesimple.png', 'assets/ataquesimple_atlas.json');
 
-    this.load.atlas('cerdocaminar','assets/cerdocaminar.png', 'assets/cerdocaminar_atlas.json');
-
     this.load.image('pergamino', 'assets/pergamino.png');
 }
    
@@ -231,7 +220,7 @@ create() {
 
     //colisiones
     obstaculos = map.createDynamicLayer(1, tileset);
-    obstaculos.setCollisionByProperty({colisiones: false});
+    obstaculos.setCollisionByProperty({colisiones: true});
 
     //Entradas de teclado
     KeyA=this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
@@ -336,8 +325,8 @@ create() {
       start: 1,
       end: 5,
       }),
-      frameRate: 10,
-      repeat: 0
+      frameRate: 5,
+      repeat: -1
     });
 
     //Animación tanquecaminar
@@ -361,18 +350,6 @@ create() {
       end: 1,
       }),
       frameRate: 3,
-      repeat: -1
-    });
-
-     //Animación cerdocaminar
-    this.anims.create({
-      key: 'cerdocaminar',
-      frames: this.anims.generateFrameNames('cerdocaminar', { 
-      prefix: 'cerdo',
-      start: 0,
-      end: 1,
-      }),
-      frameRate: 5,
       repeat: -1
     });
 
@@ -429,28 +406,28 @@ create() {
     emboscada1 = enemiList.create(0,0,'enemigobasico').setScale(0.15);
     emboscada1.body.setSize(350,350);
     this.physics.add.overlap(player,emboscada1,this.perseguiremboscada1, null, this);
-    this.physics.add.overlap(player, emboscada1, this.matarpeque, null, this);
+    this.physics.add.overlap(player, emboscada1, this.mataremboscada1, null, this);
     this.physics.add.collider(emboscada1, obstaculos);
 
     //Enemigo emboscada 1
     emboscada2 = enemiList.create(0,0,'enemigobasico').setScale(0.15);
     emboscada2.body.setSize(350,350);
     this.physics.add.overlap(player,emboscada2,this.perseguiremboscada2, null, this);
-    this.physics.add.overlap(player, emboscada2, this.matarpeque, null, this);
+    this.physics.add.overlap(player, emboscada2, this.mataremboscada2, null, this);
     this.physics.add.collider(emboscada2, obstaculos);
 
     //Enemigo emboscada 1
     emboscada3 = enemiList.create(0,0,'enemigobasico').setScale(0.15);
     emboscada3.body.setSize(350,350);
     this.physics.add.overlap(player,emboscada3,this.perseguiremboscada3, null, this);
-    this.physics.add.overlap(player, emboscada3, this.matarpeque, null, this);
+    this.physics.add.overlap(player, emboscada3, this.mataremboscada3, null, this);
     this.physics.add.collider(emboscada3, obstaculos);
 
     //Enemigo emboscada 1
     emboscada4 = enemiList.create(0,0,'enemigobasico').setScale(0.15);
     emboscada4.body.setSize(350,350);
     this.physics.add.overlap(player,emboscada4,this.perseguiremboscada4, null, this);
-    this.physics.add.overlap(player, emboscada4, this.matarpeque, null, this);
+    this.physics.add.overlap(player, emboscada4, this.mataremboscada4, null, this);
     this.physics.add.collider(emboscada4, obstaculos);
 
     activador = this.physics.add.sprite(800,950, 'hearth').setScale(0.01);
@@ -461,10 +438,6 @@ create() {
 update()
 {
     //Funciones
-    this.movercerdo();
-    this.girar();
-    this.movercerdo2();
-    this.girar2();
     this.atacar();
     this.atacar2();
     this.Speedboost();
@@ -640,64 +613,6 @@ ataque2(objeto1, objeto2)
     }
 }
 
-//Mover cerdo grande
-movercerdo()
-{  
-    if(direccion1==1)
-    {
-        cerdo1.y=cerdo1.y-1;
-
-        if(cerdo1.y==2000)
-        {
-            direccion1=0;
-        }
-    }
-}
-
-//girar cerdo grande
-girar()
-{
-    if(direccion1==0)
-    {
-        cerdo1.y=cerdo1.y+1;
-
-        if(cerdo1.y==2400)
-        { 
-            
-            direccion1=1;
-        }
-    }
-}
-
-//mover cerdo pequeño
-movercerdo2()
-{  
-    if(direccion2==1)
-    {
-        cerdo2.y=cerdo2.y-1;
-
-        if(cerdo2.y==2000)
-        {
-            direccion2=0;
-        }
-    }
-}
-
-//girar cerdo pequeño
-girar2()
-{
-    if(direccion2==0)
-    {
-        cerdo2.y=cerdo2.y+1;
-
-        if(cerdo2.y==2400)
-        { 
-            
-            direccion2=1;
-        }
-    }
-}
-
 //Funcion para iniciar conversación
 hablar()
 {
@@ -817,7 +732,6 @@ perseguir()
           }
         }
     }
-    
 }
 
 //Grupo te ataca
@@ -846,7 +760,6 @@ atacar()
       tanque.direccion.normalize();
       tanque.setVelocityX(velocidadT * tanque.direccion.x);
       tanque.setVelocityY(velocidadT * tanque.direccion.y);
-      tanque.play('tanquecaminar');
       }  
     }
     
@@ -872,15 +785,6 @@ matarpeque2()
         var heart2 = heartList.create(enemigobasico2.x, enemigobasico2.y, 'hearth').setScale(0.2, 0.2);
 
     }
-}
-
-//tanque camina
-animaciontanque()
-{
-  if(vidatanque>0)
-  {
-    tanque.play('tanquecaminar');
-  }
 }
 
 //tanque ataca
@@ -1103,6 +1007,8 @@ VidaI(objeto1, objeto2)
 
     emboscada()
     {
+      if(emboscadaempieza=true)
+      {
       emboscada1.x=600;
       emboscada1.y=920;
       emboscada2.x=600;
@@ -1121,6 +1027,8 @@ VidaI(objeto1, objeto2)
       emboscada4.play('ataquesimple');
 
       activador.destroy();
+      emboscadaempieza=false;
+      }
     }
     
 
@@ -1218,25 +1126,76 @@ VidaI(objeto1, objeto2)
     {
       if(seguiremboscada==true)
       {
+        if(vidaenemigoemboscada1==true)
+        {
         emboscada1.direccion = new Phaser.Math.Vector2(player.x-emboscada1.x, player.y-emboscada1.y);
         emboscada1.direccion.normalize();
         emboscada1.setVelocityX(velocidadE * emboscada1.direccion.x);
         emboscada1.setVelocityY(velocidadE * emboscada1.direccion.y);
+        }
 
+        if(vidaenemigoemboscada2==true)
+        {
         emboscada2.direccion = new Phaser.Math.Vector2(player.x-emboscada2.x, player.y-emboscada2.y);
         emboscada2.direccion.normalize();
         emboscada2.setVelocityX(velocidadE * emboscada2.direccion.x);
         emboscada2.setVelocityY(velocidadE * emboscada2.direccion.y);
+        }
 
+        if(vidaenemigoemboscada3==true)
+        {
         emboscada3.direccion = new Phaser.Math.Vector2(player.x-emboscada3.x, player.y-emboscada3.y);
         emboscada3.direccion.normalize();
         emboscada3.setVelocityX(velocidadE * emboscada3.direccion.x);
         emboscada3.setVelocityY(velocidadE * emboscada3.direccion.y);
+        }
 
+
+        if(vidaenemigoemboscada4==true)
+        {
         emboscada4.direccion = new Phaser.Math.Vector2(player.x-emboscada4.x, player.y-emboscada4.y);
         emboscada4.direccion.normalize();
         emboscada4.setVelocityX(velocidadE * emboscada4.direccion.x);
         emboscada4.setVelocityY(velocidadE * emboscada4.direccion.y);
+        }
+      }
+    }
+
+    mataremboscada1()
+    {
+      if (SPACE.isDown)
+    {
+        vidaenemigoemboscada1=false;
+        emboscada1.destroy();
+        var heart = heartList.create(emboscada1.x, emboscada1.y, 'hearth').setScale(0.2, 0.2);
+    }
+    }
+
+    mataremboscada2()
+    {
+      if(SPACE.isDown && vidaenemigoemboscada2==true)
+      {
+      vidaenemigoemboscada2=false;
+      emboscada2.destroy()
+      }
+    }
+
+    mataremboscada3()
+    {
+      if(SPACE.isDown && vidaenemigoemboscada3==true)
+      {
+      vidaenemigoemboscada3=false;
+      emboscada3.destroy()
+      }
+    }
+
+    mataremboscada4()
+    {
+      if(SPACE.isDown && vidaenemigoemboscada4==true)
+      {
+      vidaenemigoemboscada4=false;
+      emboscada4.destroy()
+      var heart = heartList.create(emboscada4.x, emboscada4.y, 'hearth').setScale(0.2, 0.2);
       }
     }
 }
