@@ -22,24 +22,32 @@ var texto5;
 
 //Velocidad e los enemigos
 var enemigobasico;
+var enemigobasico2;
 var tanque;
 var tanquemed;
 var tanquepeque;
-var velocidad=150;
+var velocidadE=150;
+var velocidadT=50;
 
 //Variable para que empiece la persecución
-var seguir=false;
+var seguir=0;
 var seguir2=false;
 
 //Variables de combate
 var vidaenemigo=true;
-var golpeneemigo=0;
-var cdenemigo=0;
 var vidaenemigo2=true;
+var golpeneemigo=0;
+var golpeneemigo2=0;
+var cdenemigo=0;
+var vidaenemigo3=true;
 var ataquetanque=50;
 var ataquebasico=50;
+var ataquebasico2=50;
+var ataquegrupo=false;
+var vidatanque=2;
+var contadorCorazones=0;
+var corazones = null;
 
-var vidatanque=3;
 
 //CERDOS
 var cerdo1;
@@ -81,6 +89,7 @@ var tronco
 //listas
 var monedaList;
 var heartList;
+var enemiList;
 
 class villa extends Phaser.Scene
 {
@@ -119,8 +128,9 @@ var cdenemigo=0;
 var vidaenemigo2=true;
 var ataquetanque=50;
 var ataquebasico=50;
-
+var velocidadE=150;
 var vidatanque=3;
+var ataquegrupo=false;
 
 //PUZLE
 var pieza=0;
@@ -154,7 +164,7 @@ preload()
     this.load.image('enemigobasico', 'assets/basico0.png');    
     this.load.image('tanque', 'assets/tanque.png');
     this.load.image('hearth', 'assets/hearth.png');
-
+    this.load.image('inventario', 'assets/inventario.png'); 
     this.load.image('texto1', 'assets/textov1.png');
     this.load.image('texto2', 'assets/textov2.png');
     this.load.image('texto3', 'assets/textov3.png');
@@ -194,6 +204,7 @@ create() {
     SPACE=this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     KeyE=this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
     KeyQ=this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
+    KeyV=this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.V);
 
     //Sprite player
     player = this.physics.add.sprite(2600,2365, 'attack').setScale(0.08);
@@ -248,31 +259,6 @@ create() {
     this.physics.add.overlap(player, NPC, this.pasar, null, this);
     this.physics.add.overlap(player, NPC, this.recogermision, null, this);
 
-    //Enemigo basico
-    enemigobasico = this.physics.add.sprite(1900,1500,'enemigobasico').setScale(0.15);
-    enemigobasico.body.setSize(350,350);
-    this.physics.add.overlap(player,enemigobasico,this.perseguir, null, this);
-    this.physics.add.overlap(player, enemigobasico, this.matarpeque, null, this);
-    this.physics.add.collider(enemigobasico, obstaculos);
-
-    //Enemigo tanque
-    tanque = this.physics.add.sprite(1600,1400,'tanque').setScale(0.8);
-    tanque.body.setSize(25,25,500,-100);
-    this.physics.add.overlap(player,tanque,this.matar, null, this);
-    this.physics.add.overlap(player,tanque,this.perdervida, null, this);
-    this.physics.add.collider(tanque, obstaculos);
-
-    //tanque mediano
-    tanquemed = this.physics.add.sprite(tanque.x,tanque.y,'tanquepeque').setScale(0.001);
-    this.physics.add.overlap(player,tanquemed,this.perdervida, null, this);
-    tanquemed.body.setSize(200000,200000);
-
-    //tanque grande
-    tanquepeque = this.physics.add.sprite(tanque.x,tanque.y,'tanquepeque').setScale(0.001);
-    this.physics.add.overlap(player,tanquepeque,this.perseguir2, null, this);
-    this.physics.add.overlap(player,tanquepeque,this.atacar2, null, this);
-    tanquepeque.body.setSize(400000,400000);
-
     //PUZLE
     antorcha1 = this.physics.add.sprite(1730,1050, 'hoguerapagada').setScale(0.8);
     antorcha2 = this.physics.add.sprite(2335,820, 'hoguerapagada').setScale(0.8);
@@ -286,8 +272,7 @@ create() {
     CoolDown = this.add.text(0, 20, 'CD: 0', { fontSize: '20px', fill: 'black' }).setScrollFactor(0);
 
     heartList = this.physics.add.group();
-
-    this.physics.add.overlap(player, heartList, this.aumentarVida, null, this);
+    this.physics.add.overlap(player, heartList, this.VidaI, null, this);
 
     tronco = this.physics.add.sprite(1615,560, 'tronco').setScale(1);
     tronco.body.setSize(50,50);
@@ -339,12 +324,50 @@ create() {
       end: 1,
       }),
       frameRate: 5,
-      repeat: 0
+      repeat: -1
     });
 
     final=this.physics.add.sprite(50,100, 'tronco').setScale(0.01);
     final.body.setSize(10000,10000);
     this.physics.add.overlap(player, final, this.siguiente, null, this);
+
+    enemiList = this.physics.add.group();
+
+    //Enemigo basico 1
+    enemigobasico = enemiList.create(1950,800,'enemigobasico').setScale(0.15);
+    enemigobasico.body.setSize(350,350);
+    this.physics.add.overlap(player,enemigobasico,this.perseguir, null, this);
+    this.physics.add.overlap(player, enemigobasico, this.matarpeque, null, this);
+    this.physics.add.collider(enemigobasico, obstaculos);
+
+    //Enemigo basico 2
+    enemigobasico2 = enemiList.create(2150,800,'enemigobasico').setScale(0.15);
+    enemigobasico2.body.setSize(350,350);
+    this.physics.add.overlap(player,enemigobasico2,this.perseguir, null, this);
+    this.physics.add.overlap(player, enemigobasico2, this.matarpeque2, null, this);
+    this.physics.add.collider(enemigobasico2, obstaculos);
+
+    //Enemigo tanque
+    tanque = this.physics.add.sprite(2050,700,'tanque').setScale(0.8);
+    tanque.body.setSize(25,25,500,-100);
+    this.physics.add.overlap(player,tanque,this.matar, null, this);
+    this.physics.add.overlap(player,tanque,this.perdervida, null, this);
+    this.physics.add.collider(tanque, obstaculos);
+
+    //tanque mediano
+    tanquemed = this.physics.add.sprite(tanque.x,tanque.y,'tanquepeque').setScale(0.001);
+    this.physics.add.overlap(player,tanquemed,this.perdervida, null, this);
+    tanquemed.body.setSize(200000,200000);
+
+    //tanque grande
+    tanquepeque = this.physics.add.sprite(tanque.x,tanque.y,'tanquepeque').setScale(0.001);
+    this.physics.add.overlap(player,tanquepeque,this.perseguir, null, this);
+    this.physics.add.overlap(player,tanquepeque,this.atacar2, null, this);
+    tanquepeque.body.setSize(400000,400000);
+
+    inventario = this.add.sprite(750,90, 'inventario').setScale(0.3);
+    inventario.setScrollFactor(0);
+    inventario.huecos =new Array;
 }
 
 update()
@@ -361,6 +384,7 @@ update()
     this.conversar();
     this.moveplayer();
     this.acosar();
+    this.consumir();
 }
 
 moveplayer()
@@ -440,6 +464,12 @@ todosloscd()
       ataquebasico=ataquebasico-1;
     }
 
+    //Variable combate
+    if(ataquebasico2>0)
+    {
+      ataquebasico2=ataquebasico2-1;
+    }
+
     if(cdenemigo>0)
     {
       cdenemigo=cdenemigo-1;
@@ -456,6 +486,13 @@ todosloscd()
     {
       cdf=cdf-1;
     }
+
+    //Variable cura 
+    if (CoolDownHeal >= 0) 
+        {
+            CoolDownHeal--;
+        }
+
     
 }
 
@@ -633,12 +670,13 @@ destruir()
     finalconversacion=true;
 }
 
-//Enemigo basico te persigue
+//Enemigos basicos te persiguen
 perseguir()
 {
    if(vidaenemigo==true)
     {
-        seguir=true;
+      ataquegrupo=true;
+
         if(ataquebasico==0)
         {
           enemigobasico.play('ataqueb');
@@ -654,18 +692,63 @@ perseguir()
           }
         }
     }
+
+    if(vidaenemigo3==true)
+    {
+      ataquegrupo=true;
+
+        if(ataquebasico2==0)
+        {
+          enemigobasico2.play('ataqueb');
+          vidaplayer=vidaplayer-1;
+          vidas = vidas.setText('Vidas: '+ vidaplayer);
+          ataquebasico2=120;
+
+          if (vidaplayer <= 0) 
+          {
+            player.destroy();
+            inmovil = true;
+            personajevivo=false;
+          }
+        }
+    }
     
 }
 
-//Enemigo basico te ataca
+perseguir2()
+{
+   
+    
+}
+
+//Grupo te ataca
 atacar()
 {
-   if(seguir==true & inmovil ==false) 
+   if(inmovil ==false & ataquegrupo==true) 
     {
+      tanquepeque.destroy();
+      if(vidaenemigo==true)
+      {
         enemigobasico.direccion = new Phaser.Math.Vector2(player.x-enemigobasico.x, player.y-enemigobasico.y);
         enemigobasico.direccion.normalize();
-        enemigobasico.setVelocityX(velocidad * enemigobasico.direccion.x);
-        enemigobasico.setVelocityY(velocidad * enemigobasico.direccion.y);   
+        enemigobasico.setVelocityX(velocidadE * enemigobasico.direccion.x);
+        enemigobasico.setVelocityY(velocidadE * enemigobasico.direccion.y); 
+      }
+      if(vidaenemigo3==true)
+      {
+        enemigobasico2.direccion = new Phaser.Math.Vector2(player.x-enemigobasico2.x, player.y-enemigobasico2.y);
+        enemigobasico2.direccion.normalize();
+        enemigobasico2.setVelocityX(velocidadE * enemigobasico2.direccion.x);
+        enemigobasico2.setVelocityY(velocidadE * enemigobasico2.direccion.y);
+      }
+      if(vidaenemigo2==true)
+      {
+      tanque.direccion = new Phaser.Math.Vector2(player.x-tanque.x, player.y-tanque.y);
+      tanque.direccion.normalize();
+      tanque.setVelocityX(velocidadT * tanque.direccion.x);
+      tanque.setVelocityY(velocidadT * tanque.direccion.y);
+      this.animaciontanque();
+      }  
     }
     
 }
@@ -675,29 +758,20 @@ matarpeque()
 {  
     if (SPACE.isDown)
     {
-        if(golpeneemigo==0)
-        {
         enemigobasico.destroy();
-        seguir=false;
         vidaenemigo=false;
-        mision=true;
-        }
-        
-        if(vidaplayer<10)
-      {
         var heart = heartList.create(enemigobasico.x, enemigobasico.y, 'hearth').setScale(0.1, 0.1);
-      }
     }
 }
 
-//tanque te persigue
-perseguir2()
-{
-   if(vidaenemigo2==true)
+matarpeque2()
+{  
+    if (SPACE.isDown)
     {
-        seguir2=true;
-        tanquepeque.destroy();
-        this.animaciontanque();
+        enemigobasico2.destroy();
+        vidaenemigo3=false;
+        var heart2 = heartList.create(enemigobasico2.x, enemigobasico2.y, 'hearth').setScale(0.1, 0.1);
+
     }
 }
 
@@ -732,18 +806,13 @@ matar()
       {
         tanque.destroy();
         tanquemed.destroy();
-        seguir2=false;
+        mision=true;
         vidaenemigo2=false;
       }
       else if(vidatanque==2 && cdenemigo==0)
       {
         vidatanque=1;
-        cdenemigo=50;
-      }
-      else if(vidatanque==3 && cdenemigo==0)
-      {
-        vidatanque=2;
-        cdenemigo=50;
+        cdenemigo=20;
       }
         
     }
@@ -752,7 +821,7 @@ matar()
 //PUZLE
 puzle1()
 {
-    if(KeyE.isDown && pieza==0 && mision==true)
+    if(KeyE.isDown && pieza==0 && finalc==true)
     {
         pieza=1;
         antorchae1 = this.physics.add.sprite(1730,1050, 'hoguerapagada').setScale(0.8);
@@ -763,7 +832,7 @@ puzle1()
 
 puzle2()
 {
-    if(KeyE.isDown && pieza==1 && mision==true)
+    if(KeyE.isDown && pieza==1 && finalc==true)
     {
         pieza=2;
         antorchae2 = this.physics.add.sprite(2335,820, 'hoguerapagada').setScale(0.8);
@@ -774,7 +843,7 @@ puzle2()
 
 puzle3()
 {
-    if(KeyE.isDown && pieza==2 && mision==true)
+    if(KeyE.isDown && pieza==2 && finalc==true)
     {
         pieza=3;
         antorchae3 = this.physics.add.sprite(1695,215, 'hoguerapagada').setScale(0.8);
@@ -785,7 +854,7 @@ puzle3()
 
 puzle4()
 {
-    if(KeyE.isDown && pieza==3 && mision==true)
+    if(KeyE.isDown && pieza==3 && finalc==true)
     {
         pieza=4;
         antorchae4 = this.physics.add.sprite(2175,380, 'hoguerapagada').setScale(0.8);
@@ -839,14 +908,10 @@ decrementarCoolDown()
 }
 
 aumentarVida(objeto1, objeto2)
-{
-    if(inmovil==false)
-    {
-    vidaplayer = vidaplayer + 3;
-    vidas = vidas.setText('Vidas: '+ vidaplayer);
-    objeto2.destroy();
+    {  
+        vidaplayer=vidaplayer+3;
+        vidas = vidas.setText('Vidas: '+ vidaplayer); 
     }
-}
 
 perdervida()
 {
@@ -898,8 +963,46 @@ nopasar()
 
 siguiente()
 {
-    Phaser.Scene.call(this, { key: 'laia3', active: true });          
-    this.scene.transition({ target: 'laia3', duration: 2000 });
+    Phaser.Scene.call(this, { key: 'dani1', active: true });          
+    this.scene.transition({ target: 'dani1', duration: 2000 });
 }
 
+VidaI(objeto1, objeto2)
+    {
+        objeto2.x = (inventario.x - 115) + 12;
+        objeto2.y = inventario.y - 35;
+        objeto2.setScrollFactor(0);
+        heart = true;
+
+        if (contadorCorazones == 0) 
+        {
+            corazones = this.add.text((inventario.x - 115) + 23, inventario.y - 35, '0', { fontSize: '20px', fill: 'black' }).setScrollFactor(0);
+            contadorCorazones++;
+            corazones = corazones.setText('' +contadorCorazones);
+        }
+        else if (contadorCorazones >= 0) 
+        {
+            contadorCorazones++;
+            corazones = corazones.setText('' +contadorCorazones);
+        }
+    }
+
+    consumir(objeto1, objeto2)
+    {   
+        if (KeyV.isDown && heartList.getLength() > 0 && CoolDownHeal <= 0)
+        {
+            heartList.remove(heartList.getChildren()[heartList.getLength() - 1], true, true);
+            this.aumentarVida();
+            contadorCorazones--;
+            corazones = corazones.setText('' +contadorCorazones);
+            CoolDownHeal = 30;
+            console.log(heartList.getLength());
+
+            /*if (contadorCorazones == 0) 
+            {
+                corazones.destroy();
+                contadorCorazones = 0;
+            }*/
+        }
+    }
 }
