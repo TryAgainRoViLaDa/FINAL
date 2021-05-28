@@ -154,7 +154,7 @@ class dani1 extends Phaser.Scene
     this.load.image('enemigoBasico', 'assets/enemigoBasico.png');
     this.load.image('enemigoArquero', 'assets/enemigoArquero.png');
     this.load.image('enemyArrow', 'assets/enemyArcher.png');
-    this.load.image('heart', 'assets/heart.png');
+    this.load.image('heart', 'assets/hearth.png');
     this.load.atlas('attack','assets/attack.png', 'assets/attack_atlas.json');
     this.load.image('inventario', 'assets/inventario.png');
     this.load.image('gay', 'assets/enemy.png');
@@ -340,8 +340,8 @@ class dani1 extends Phaser.Scene
 
     hola()
     {
-        Phaser.Scene.call(this, { key: 'villa', active: true });          
-        this.scene.transition({ target: 'villa', duration: 2000 });
+        Phaser.Scene.call(this, { key: 'villa2', active: true });          
+        this.scene.transition({ target: 'villa2', duration: 2000 });
     }
 
     //Funcion para contadores

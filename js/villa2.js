@@ -969,8 +969,8 @@ nopasar()
 
 siguiente()
 {
-    Phaser.Scene.call(this, { key: 'dani1', active: true });          
-    this.scene.transition({ target: 'dani1', duration: 2000 });
+    Phaser.Scene.call(this, { key: 'laia3', active: true });          
+    this.scene.transition({ target: 'laia3', duration: 2000 });
 }
 
 VidaI(objeto1, objeto2)

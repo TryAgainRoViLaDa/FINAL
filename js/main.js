@@ -13,7 +13,7 @@ var config = {
             gravity:{y:0}
         }
     },
-    scene:[villa2, dani1, laia3, inventario]
+    scene:[dani1, villa2, laia3, inventario]
 };
 
 game = new Phaser.Game(config);
